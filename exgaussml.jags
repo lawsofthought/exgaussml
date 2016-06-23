@@ -1,0 +1,51 @@
+model {
+	for (i in 1:N){
+		
+		z[i] ~ dnorm(mu[i] + y[i], invsigmasq)
+		y[i] ~ dexp(tau[i])
+
+		#z[i] <- x[i] + y[i]
+
+		mu[i] <- alpha.mu[subjects[i]] + beta.mu[subjects[i]]*v[i]
+		log(tau[i]) <- alpha.tau[subjects[i]] + beta.tau[subjects[i]]*v[i]
+
+	}
+
+	# Inter-subject variability in linear coefficients
+	# ################################################
+	for (k in 1:K) {
+		alpha.tau[k] ~ dnorm(alpha.tau.0, alpha.tau.invsigmasq)
+		beta.tau[k] ~ dnorm(beta.tau.0, beta.tau.invsigmasq)
+
+		alpha.mu[k] ~ dnorm(alpha.mu.0, alpha.mu.invsigmasq)
+		beta.mu[k] ~ dnorm(beta.mu.0, beta.mu.invsigmasq)
+	}
+
+	# Noninformative priors on averages of linear coeffcients
+	# #######################################################
+
+	alpha.tau.0 ~ dnorm(0, 1e-3)
+	beta.tau.0 ~ dnorm(0, 1e-3)
+	alpha.mu.0 ~ dnorm(0, 1e-3)
+	beta.mu.0 ~ dnorm(0, 1e-3)
+
+	# Noninformative priors on intersubject variability in linear coefficients
+	# ########################################################################
+
+	alpha.tau.invsigmasq ~ dunif(1e-3, 1e+3)
+	beta.tau.invsigmasq ~ dunif(1e-3, 1e+3)
+	alpha.mu.invsigmasq ~ dunif(1e-3, 1e+3)
+	beta.mu.invsigmasq ~ dunif(1e-3, 1e+3)
+
+
+	# Noninformative priors on invsigmasq, and so non-informative on sigma 
+	invsigmasq ~ dunif(1e-3, 1e+3)
+	
+
+	# Convert all inverse variances to standard deviations for convenience.
+	alpha.tau.sigma <- sqrt(1/alpha.tau.invsigmasq)
+	beta.tau.sigma <- sqrt(1/beta.tau.invsigmasq)
+	alpha.mu.sigma <- sqrt(1/alpha.mu.invsigmasq)
+	beta.mu.sigma <- sqrt(1/beta.mu.invsigmasq)
+	sigma <- sqrt(1/invsigmasq)
+}
